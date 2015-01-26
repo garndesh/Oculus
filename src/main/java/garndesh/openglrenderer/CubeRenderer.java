@@ -124,13 +124,13 @@ public class CubeRenderer {
 		texture.bind();
 	}
 
-	public void RenderCube(Transform location, ShaderProgram shader) {
+	public void RenderCube() {
 
-		// Bind the shaders
-		shader.bind();
-		shader.setUniform("m_model", location.getFloatBuffer());
-		//shader.setUniform("m_view", camera.getViewBuffer());
-		//shader.setUniform("m_proj", camera.getProjectionBuffer());
+//		// Bind the shaders
+//		shader.bind();
+//		shader.setUniform("m_model", location.getFloatBuffer());
+//		shader.setUniform("m_view", camera.getViewBuffer());
+//		shader.setUniform("m_proj", camera.getProjectionBuffer());
 		// Bind the VAO
 		// Bind the VAO
 		glBindVertexArray(vaoID);
@@ -143,7 +143,7 @@ public class CubeRenderer {
 		glDisableVertexAttribArray(1);
 		glBindVertexArray(0);
 		// Unbind the shaders
-		ShaderProgram.unbind();
+		//ShaderProgram.unbind();
 	}
 	
 	public void dispose(){

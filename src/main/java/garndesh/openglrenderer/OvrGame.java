@@ -12,6 +12,9 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Stack;
@@ -71,21 +74,6 @@ public class OvrGame {
 	public OvrGame() {
 		instance = this;
 
-		try {
-			// Create the default PixelFormat
-			PixelFormat pfmt = new PixelFormat();
-
-			// We need a core context with atleast OpenGL 3.2
-			ContextAttribs cattr = new ContextAttribs(3, 2)
-					.withForwardCompatible(true).withProfileCore(true);
-
-			// Create the Display
-			Display.create(pfmt, cattr);
-		} catch (LWJGLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
 		Hmd.initialize();
 
 		try {
@@ -102,6 +90,31 @@ public class OvrGame {
 		if (0 == hmd.configureTracking(ovrTrackingCap_Orientation
 				| ovrTrackingCap_Position, 0)) {
 			throw new IllegalStateException("Unable to start the sensor");
+		}
+		
+		try {
+			// Create the default PixelFormat
+			PixelFormat pfmt = new PixelFormat();
+
+			// We need a core context with atleast OpenGL 3.2
+			ContextAttribs cattr = new ContextAttribs(3, 2)
+					.withForwardCompatible(true).withProfileCore(true);
+
+			 
+	        
+			// Create the Display
+			Display.setDisplayMode(new DisplayMode(hmd.Resolution.w, hmd.Resolution.h));
+			
+
+			Display.setLocation(hmd.WindowsPos.x, hmd.WindowsPos.y);
+			Display.setVSyncEnabled(true);
+			Display.create(pfmt, cattr);
+			//onResize(1920/2, 1080/2);
+			resized();
+			
+		} catch (LWJGLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
 		for (int eye = 0; eye < 2; ++eye) {
@@ -188,15 +201,16 @@ public class OvrGame {
 		long thisFrame = getCurrentTime();
 
 		init();
-		setupDisplay(1920 / 4, 1080 / 4, 1920 / 2, 1080 / 2);
+		//setupDisplay(1920 / 4, 1080 / 4, 1920 / 2, 1080 / 2);
 
 		while (!Display.isCloseRequested()) {
 
 			thisFrame = getCurrentTime();
 			update(thisFrame - lastFrame);
 			drawFrame();
-			Display.update();
-			Log.d("fps", ""+(1000/(thisFrame - lastFrame))+"fps");
+			//Display.update();
+		    Display.processMessages();
+			Log.d("fps", "" + (1000 / (thisFrame - lastFrame)) + "fps");
 			lastFrame = thisFrame;
 		}
 	}
@@ -212,8 +226,8 @@ public class OvrGame {
 			// .set(projections[eye]);
 			// This doesn't work as it breaks the contiguous nature of the array
 			// FIXME there has to be a better way to do this
-			//poses[eye].Orientation = pose.Orientation;
-			//poses[eye].Position = pose.Position;
+			// poses[eye].Orientation = pose.Orientation;
+			// poses[eye].Position = pose.Position;
 
 			// modelview.push();
 			{
@@ -228,17 +242,20 @@ public class OvrGame {
 				// Store the view matrix in the buffer
 				view.store(viewBuffer);
 				viewBuffer.rewind();
-
+				
 				shader.bind();
 				shader.setUniform("m_view", viewBuffer);
+				//shader.setUniform("m_proj", camera.getProjectionBuffer());
 				// shader.setUniform("m_proj", null);
 
 				frameBuffers[eye].activate();
-				transform.translate(5, 0, 0);
+				transform.translate(2, 0, 0);
+				shader.setUniform("m_model", transform.getFloatBuffer());
 
-				cubeRenderer.RenderCube(transform, shader);
+				cubeRenderer.RenderCube();
 				// renderScene();
 				frameBuffers[eye].deactivate();
+				ShaderProgram.unbind();
 			}
 			// modelview.pop();
 		}
@@ -279,7 +296,7 @@ public class OvrGame {
 		return hmd;
 	}
 
-	protected void setupDisplay(int left, int top, int width, int height) {
+	/*protected void setupDisplay(int left, int top, int width, int height) {
 		try {
 			Display.setDisplayMode(new DisplayMode(width, height));
 		} catch (LWJGLException e) {
@@ -289,7 +306,7 @@ public class OvrGame {
 		Display.setVSyncEnabled(true);
 		resized();
 	}
-
+*/
 	/**
 	 * Handle Display resizing
 	 */
